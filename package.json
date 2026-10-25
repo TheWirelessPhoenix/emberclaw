@@ -1,0 +1,16 @@
+{
+  "name": "emberclaw",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"packages/*/test/*.test.ts\"",
+    "chat": "node packages/cli/src/main.ts chat"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
