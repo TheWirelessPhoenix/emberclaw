@@ -1,0 +1,14 @@
+{
+  "model": { "provider": "nebius", "id": "nvidia/nemotron-3-super-120b-a12b" },
+  "providers": {
+    "nebius": {
+      "baseUrl": "https://api.tokenfactory.nebius.com/v1",
+      "api": "openai-completions",
+      "apiKey": "$NEBIUS_API_KEY",
+      "models": [{ "id": "nvidia/nemotron-3-super-120b-a12b" }]
+    }
+  },
+  "sandbox": { "mode": "auto", "required": false, "network": true },
+  "allowUsers": [],
+  "telegram": { "tokenEnv": "TELEGRAM_BOT_TOKEN" }
+}

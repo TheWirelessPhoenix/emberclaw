@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Router, type Channel, type Event } from "../src/index.ts";
-import { FakeBackend } from "../../backends/src/fake.ts";
+import { FakeBackend } from "../../agent/src/fake.ts";
 
 function capture() {
   const out: Event[] = [];
@@ -35,5 +35,5 @@ test("unknown user is ignored", async () => {
 });
 
 test("switching to an unknown backend throws", async () => {
-  await assert.rejects(router(["u1"]).switchBackend("c", "nope"), /unknown backend/);
+  await assert.rejects(router(["u1"]).switchBackend(capture().channel, "c", "nope"), /unknown backend/);
 });

@@ -1,17 +1,29 @@
-import { createInterface } from "node:readline/promises";
-import type { Channel, Event, IncomingMessage } from "@emberclaw/core";
+import { createInterface } from "node:readline";
+import { AsyncQueue, type ApprovalRequest, type Channel, type Event, type IncomingMessage } from "@emberclaw/core";
 
-// Local terminal channel: lets you chat with a backend without Telegram.
+// Local terminal channel: lets you chat with the agent without Telegram.
+// All input (messages and approval answers) flows through one line queue, so piped input works.
 export class TerminalChannel implements Channel {
   readonly name = "cli";
-  private rl = createInterface({ input: process.stdin, output: process.stdout });
-  private closed = new Promise<null>((resolve) => this.rl.once("close", () => resolve(null)));
+  private lines = new AsyncQueue<string>();
+  private reader = this.lines[Symbol.asyncIterator]();
+  private rl = createInterface({ input: process.stdin });
+
+  constructor() {
+    this.rl.on("line", (l) => this.lines.push(l));
+    this.rl.on("close", () => this.lines.close());
+  }
+
+  private async ask(prompt: string): Promise<string | null> {
+    process.stdout.write(prompt);
+    const r = await this.reader.next();
+    return r.done ? null : r.value;
+  }
 
   async start(onMessage: (msg: IncomingMessage) => Promise<void>): Promise<void> {
     while (true) {
-      const line = await Promise.race([this.rl.question("you> "), this.closed]);
-      if (line === null) return;
-      if (line.trim() === "/quit") return;
+      const line = await this.ask("you> ");
+      if (line === null || line.trim() === "/quit") return;
       if (line.trim()) await onMessage({ chatId: "local", userId: "local", text: line });
     }
   }
@@ -21,14 +33,15 @@ export class TerminalChannel implements Channel {
     for await (const e of events) {
       if (e.type === "text") process.stdout.write(e.text);
       else if (e.type === "tool_call") process.stdout.write(`\n[tool ${e.name}]\n`);
+      else if (e.type === "tool_result" && e.isError) process.stdout.write(`[tool error] ${e.output.slice(0, 200)}\n`);
       else if (e.type === "error") process.stdout.write(`\n[error] ${e.message}`);
     }
     process.stdout.write("\n");
   }
 
-  async askApproval(_chatId: string, req: { action: string; detail: string }): Promise<boolean> {
-    const a = await this.rl.question(`approve ${req.action}: ${req.detail}? [y/N] `);
-    return a.trim().toLowerCase() === "y";
+  async askApproval(_chatId: string, req: ApprovalRequest): Promise<boolean> {
+    const a = await this.ask(`\napprove ${req.action}: ${req.detail}? [y/N] `);
+    return a?.trim().toLowerCase() === "y";
   }
 
   async stop(): Promise<void> {

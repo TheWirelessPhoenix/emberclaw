@@ -3,14 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test \"packages/*/test/*.test.ts\"",
-    "chat": "node packages/cli/src/main.ts chat"
+    "chat": "node packages/cli/src/main.ts chat",
+    "emberclaw": "node packages/cli/src/main.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "1.4.0"
   }
 }

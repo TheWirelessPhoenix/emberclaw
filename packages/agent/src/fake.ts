@@ -1,11 +1,11 @@
-import type { Backend, Event, Session } from "@emberclaw/core";
+import type { Backend, Event, Session, SessionHooks } from "@emberclaw/core";
 
 // Echo backend for tests and offline demos.
 export class FakeBackend implements Backend {
   readonly name = "fake";
   private cancelled = false;
 
-  async start(_session: Session): Promise<void> {}
+  async start(_session: Session, _hooks: SessionHooks): Promise<void> {}
 
   async *send(text: string): AsyncIterable<Event> {
     this.cancelled = false;
